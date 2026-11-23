@@ -32,5 +32,11 @@ def validate_blend(path: str, profile: str = "pc") -> list[dict]:
     return [validate(asset, profile).to_dict() for asset in blender_runner.inspect_blend(path)]
 
 
+@mcp.tool()
+def render_turntable(blend_path: str, out_gif: str, frames: int = 24, size: int = 360) -> dict:
+    """Rend une rotation à 360° de l'asset (Blender Workbench) et écrit un GIF animé, pour une démo ou une revue."""
+    return blender_runner.render_turntable(blend_path, out_gif, frames, size)
+
+
 if __name__ == "__main__":
     mcp.run()

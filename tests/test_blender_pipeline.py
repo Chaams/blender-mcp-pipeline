@@ -40,3 +40,15 @@ def test_inspect_roundtrip_matches_generation(tmp_path):
 def test_bad_name_is_flagged_after_generation(tmp_path):
     asset = blender_runner.make_prop("crate", 1.0, str(tmp_path), "wooden_crate")
     assert "NAME_PREFIX" in {i.code for i in validate(asset).issues}
+
+
+def test_turntable_gif_is_animated_and_rendered_by_blender(tmp_path):
+    from PIL import Image
+
+    blender_runner.make_prop("barrel", 1.0, str(tmp_path), "SM_OilBarrel")
+    result = blender_runner.render_turntable(str(tmp_path / "SM_OilBarrel.blend"), str(tmp_path / "demo.gif"), frames=6, size=160)
+    gif = Image.open(result["gif"])
+    assert gif.n_frames == 6 and gif.size == (160, 160)
+    # la rotation doit réellement changer l'image d'une frame à l'autre
+    gif.seek(0); first = gif.convert("RGB").tobytes()
+    gif.seek(3); assert gif.convert("RGB").tobytes() != first

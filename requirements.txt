@@ -1,3 +1,4 @@
 mcp>=1.10,<2
 pytest>=8.0
+pillow>=10.0
 game-asset-validator @ git+https://github.com/Chaams/game-asset-validator.git

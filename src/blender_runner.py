@@ -52,3 +52,20 @@ def make_prop(kind: str, size: float, out_dir: str, name: str) -> dict:
 def inspect_blend(path: str) -> list[dict]:
     out = run_blender([path, "-P", str(SCRIPTS / "inspect_blend.py")])
     return _marker(out, "ASSETS_JSON=")
+
+
+def render_turntable(blend_path: str, out_gif: str, frames: int = 24, size: int = 360) -> dict:
+    """Rend une rotation à 360° de l'asset avec Blender (Workbench) et assemble un GIF animé avec Pillow."""
+    import tempfile
+
+    from PIL import Image
+
+    with tempfile.TemporaryDirectory() as tmp:
+        run_blender([blend_path, "-P", str(SCRIPTS / "render_turntable.py"), "--", tmp, str(frames), str(size)], timeout=600)
+        images = [Image.open(p).convert("RGB") for p in sorted(Path(tmp).glob("frame_*.png"))]
+        if len(images) != frames:
+            raise RuntimeError(f"{len(images)} images rendues au lieu de {frames}")
+        palette = [im.quantize(colors=96, method=Image.Quantize.MEDIANCUT) for im in images]
+        Path(out_gif).parent.mkdir(parents=True, exist_ok=True)
+        palette[0].save(out_gif, save_all=True, append_images=palette[1:], duration=70, loop=0, optimize=True)
+    return {"gif": out_gif, "frames": frames, "size": size, "bytes": Path(out_gif).stat().st_size}
